@@ -91,7 +91,7 @@ def api_start_tool(tool_id):
 
     success, actual_port, pid, error = pm_start(tool['cmd'], tool['port'])
     if success:
-        update_tool_status(tool_id, 'running', pid)
+        update_tool_status(tool_id, 'running', pid, actual_port)
         return jsonify({"success": True, "data": {"port": actual_port, "pid": pid}})
     else:
         return jsonify({"success": False, "error": error})

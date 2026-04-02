@@ -95,13 +95,23 @@ def delete_tool(id):
     return cursor.rowcount > 0
 
 
-def update_tool_status(id, status, pid=None):
-    """Update tool status and optionally PID."""
+def update_tool_status(id, status, pid=None, port=None):
+    """Update tool status, optionally PID, and optionally port."""
     db = get_db()
-    if pid is not None:
+    if pid is not None and port is not None:
+        db.execute(
+            'UPDATE tools SET status = ?, pid = ?, port = ? WHERE id = ?',
+            (status, pid, port, id)
+        )
+    elif pid is not None:
         db.execute(
             'UPDATE tools SET status = ?, pid = ? WHERE id = ?',
             (status, pid, id)
+        )
+    elif port is not None:
+        db.execute(
+            'UPDATE tools SET status = ?, port = ?, pid = NULL WHERE id = ?',
+            (status, port, id)
         )
     else:
         db.execute(
