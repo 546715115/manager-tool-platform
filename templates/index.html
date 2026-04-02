@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Hub - 管理面板</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #F5F0E8;
+            --bg-card: #FEFCF8;
+            --color-primary: #2D4A3E;
+            --color-secondary: #8CB369;
+            --color-text: #3D3D3D;
+            --color-text-light: #6B6B6B;
+            --color-success: #4CAF50;
+            --color-warning: #FF9800;
+            --color-stopped: #9E9E9E;
+            --radius-card: 24px;
+            --radius-btn: 16px;
+            --shadow-card: 0 8px 32px rgba(45, 74, 62, 0.08);
+            --shadow-btn: 0 4px 12px rgba(45, 74, 62, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--color-text);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--color-text-light);
+            margin-top: 4px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--radius-btn);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            box-shadow: var(--shadow-btn);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(45, 74, 62, 0.25);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-start {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #43A047;
+        }
+
+        .btn-stop {
+            background: var(--color-stopped);
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #757575;
+        }
+
+        .btn-danger {
+            background: #e57373;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        .tool-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            padding: 28px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(45, 74, 62, 0.12);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .tool-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.running {
+            background: rgba(76, 175, 80, 0.15);
+            color: var(--color-success);
+        }
+
+        .status-badge.stopped {
+            background: rgba(158, 158, 158, 0.15);
+            color: var(--color-stopped);
+        }
+
+        .status-badge.starting {
+            background: rgba(255, 152, 0, 0.15);
+            color: var(--color-warning);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-badge.running .status-dot {
+            background: var(--color-success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.stopped .status-dot {
+            background: var(--color-stopped);
+        }
+
+        .status-badge.starting .status-dot {
+            background: var(--color-warning);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tool-info {
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--color-text-light);
+            min-width: 60px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: var(--color-text);
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .info-value code {
+            background: rgba(45, 74, 62, 0.08);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-top: 16px;
+            border-top: 1px solid rgba(45, 74, 62, 0.08);
+        }
+
+        .card-actions-left {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card-actions-right {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(45, 74, 62, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            padding: 36px;
+            width: 90%;
+            max-width: 520px;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s ease;
+            box-shadow: 0 24px 64px rgba(45, 74, 62, 0.2);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(45, 74, 62, 0.08);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(45, 74, 62, 0.15);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(45, 74, 62, 0.1);
+            border-radius: var(--radius-btn);
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--color-text);
+            background: var(--bg-card);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 4px rgba(140, 179, 105, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--color-text-light);
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--color-text-light);
+            margin-top: 6px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            color: var(--color-text-light);
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(45, 74, 62, 0.1);
+            border-top-color: var(--color-secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, rgba(45, 74, 62, 0.08), rgba(140, 179, 105, 0.08));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-icon svg {
+            width: 56px;
+            height: 56px;
+            fill: var(--color-secondary);
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: var(--color-text-light);
+            margin-bottom: 24px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            padding: 16px 24px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: var(--radius-btn);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(45, 74, 62, 0.25);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #e57373;
+        }
+
+        .toast.success {
+            background: var(--color-success);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tool-actions {
+                flex-direction: column;
+            }
+
+            .card-actions-right {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Tool Hub</h1>
+                    <p class="subtitle">开发工具管理中心</p>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="showModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                添加工具
+            </button>
+        </header>
+
+        <div id="content">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>加载中...</p>
+            </div>
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z"/>
+                    </svg>
+                </div>
+                <h2 class="empty-title">暂无工具</h2>
+                <p class="empty-text">点击上方按钮添加你的第一个开发工具</p>
+                <button class="btn btn-primary" onclick="showModal()">添加工具</button>
+            </div>
+            <div class="tools-grid" id="tools-grid" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">添加工具</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-primary)">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="tool-form" onsubmit="saveTool(event)">
+                <input type="hidden" id="tool-id">
+                <div class="form-group">
+                    <label class="form-label" for="tool-name">工具名称</label>
+                    <input type="text" class="form-input" id="tool-name" placeholder="例如：Vue Dev Server" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="tool-cmd">启动命令</label>
+                    <input type="text" class="form-input" id="tool-cmd" placeholder="例如：npm run dev" required>
+                    <p class="form-hint">输入启动该工具所需的命令</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="tool-port">端口号</label>
+                    <input type="number" class="form-input" id="tool-port" placeholder="例如：3000" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="tool-url">访问URL（可选）</label>
+                    <input type="text" class="form-input" id="tool-url" placeholder="例如：http://localhost:3000">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary" id="save-btn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Global state
+        let tools = [];
+
+        // Fetch tools from API
+        async function fetchTools() {
+            try {
+                const response = await fetch('/api/tools');
+                const result = await response.json();
+                if (result.success) {
+                    tools = result.data;
+                    renderTools();
+                } else {
+                    showToast('获取工具列表失败', 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching tools:', error);
+                showToast('网络错误，请检查服务器', 'error');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Render tools grid
+        function renderTools() {
+            const grid = document.getElementById('tools-grid');
+            const emptyState = document.getElementById('empty-state');
+
+            if (tools.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            grid.innerHTML = tools.map(tool => `
+                <div class="tool-card" data-id="${tool.id}">
+                    <div class="tool-header">
+                        <div>
+                            <h3 class="tool-name">${escapeHtml(tool.name)}</h3>
+                            <span class="status-badge ${tool.status}">
+                                <span class="status-dot"></span>
+                                ${getStatusText(tool.status)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="tool-info">
+                        <div class="info-row">
+                            <span class="info-label">命令</span>
+                            <span class="info-value"><code>${escapeHtml(tool.cmd)}</code></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">端口</span>
+                            <span class="info-value">${tool.port}</span>
+                        </div>
+                        ${tool.url ? `
+                        <div class="info-row">
+                            <span class="info-label">地址</span>
+                            <span class="info-value">
+                                <a href="${escapeHtml(tool.url)}" target="_blank" style="color: var(--color-secondary);">
+                                    ${escapeHtml(tool.url)}
+                                </a>
+                            </span>
+                        </div>
+                        ` : ''}
+                        ${tool.pid ? `
+                        <div class="info-row">
+                            <span class="info-label">PID</span>
+                            <span class="info-value">${tool.pid}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="tool-actions">
+                        <div class="card-actions-left">
+                            ${tool.status === 'running' ? `
+                                <button class="btn btn-stop btn-sm" onclick="stopTool(${tool.id})">
+                                    停止
+                                </button>
+                                ${tool.url ? `
+                                    <a href="${escapeHtml(tool.url)}" target="_blank" class="btn btn-secondary btn-sm">
+                                        打开
+                                    </a>
+                                ` : ''}
+                            ` : tool.status === 'starting' ? `
+                                <button class="btn btn-stop btn-sm" disabled>
+                                    启动中...
+                                </button>
+                            ` : `
+                                <button class="btn btn-start btn-sm" onclick="startTool(${tool.id})">
+                                    启动
+                                </button>
+                            `}
+                        </div>
+                        <div class="card-actions-right">
+                            <button class="btn btn-secondary btn-sm btn-icon" onclick="showModal(${tool.id})" title="编辑">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTool(${tool.id})" title="删除">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Start tool
+        async function startTool(id) {
+            const card = document.querySelector(`.tool-card[data-id="${id}"]`);
+            if (card) {
+                const badge = card.querySelector('.status-badge');
+                badge.className = 'status-badge starting';
+                badge.innerHTML = '<span class="status-dot"></span>启动中...';
+            }
+
+            try {
+                const response = await fetch(`/api/tools/${id}/start`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('工具启动成功', 'success');
+                    await fetchTools();
+                } else {
+                    showToast(result.error || '启动失败', 'error');
+                    await fetchTools();
+                }
+            } catch (error) {
+                console.error('Error starting tool:', error);
+                showToast('网络错误', 'error');
+                await fetchTools();
+            }
+        }
+
+        // Stop tool
+        async function stopTool(id) {
+            try {
+                const response = await fetch(`/api/tools/${id}/stop`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('工具已停止', 'success');
+                    await fetchTools();
+                } else {
+                    showToast(result.error || '停止失败', 'error');
+                    await fetchTools();
+                }
+            } catch (error) {
+                console.error('Error stopping tool:', error);
+                showToast('网络错误', 'error');
+                await fetchTools();
+            }
+        }
+
+        // Delete tool
+        async function deleteTool(id) {
+            if (!confirm('确定要删除这个工具吗？')) return;
+
+            try {
+                const response = await fetch(`/api/tools/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('工具已删除', 'success');
+                    await fetchTools();
+                } else {
+                    showToast(result.error || '删除失败', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting tool:', error);
+                showToast('网络错误', 'error');
+            }
+        }
+
+        // Show modal for add/edit
+        function showModal(toolId = null) {
+            const overlay = document.getElementById('modal-overlay');
+            const title = document.getElementById('modal-title');
+            const form = document.getElementById('tool-form');
+            const saveBtn = document.getElementById('save-btn');
+
+            form.reset();
+            document.getElementById('tool-id').value = '';
+
+            if (toolId) {
+                const tool = tools.find(t => t.id === toolId);
+                if (tool) {
+                    title.textContent = '编辑工具';
+                    saveBtn.textContent = '更新';
+                    document.getElementById('tool-id').value = tool.id;
+                    document.getElementById('tool-name').value = tool.name;
+                    document.getElementById('tool-cmd').value = tool.cmd;
+                    document.getElementById('tool-port').value = tool.port;
+                    document.getElementById('tool-url').value = tool.url || '';
+                }
+            } else {
+                title.textContent = '添加工具';
+                saveBtn.textContent = '添加';
+            }
+
+            overlay.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            overlay.classList.remove('active');
+        }
+
+        // Close modal when clicking overlay
+        function closeModalOnOverlay(event) {
+            if (event.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        }
+
+        // Save tool (create or update)
+        async function saveTool(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('tool-id').value;
+            const name = document.getElementById('tool-name').value.trim();
+            const cmd = document.getElementById('tool-cmd').value.trim();
+            const port = parseInt(document.getElementById('tool-port').value);
+            const url = document.getElementById('tool-url').value.trim();
+
+            const data = { name, cmd, port, url };
+
+            try {
+                let response;
+                if (id) {
+                    // Update existing tool
+                    response = await fetch(`/api/tools/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    // Create new tool
+                    response = await fetch('/api/tools', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(id ? '工具已更新' : '工具已添加', 'success');
+                    closeModal();
+                    await fetchTools();
+                } else {
+                    showToast(result.error || '保存失败', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving tool:', error);
+                showToast('网络错误', 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast';
+            if (type === 'error') toast.classList.add('error');
+            if (type === 'success') toast.classList.add('success');
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Helper: Get status text
+        function getStatusText(status) {
+            const map = {
+                'running': '运行中',
+                'stopped': '已停止',
+                'starting': '启动中'
+            };
+            return map[status] || status;
+        }
+
+        // Helper: Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initial load
+        fetchTools();
+    </script>
+</body>
+</html>
