@@ -38,16 +38,17 @@ def start_tool(cmd, port):
         port: 期望端口号
 
     Returns:
-        tuple: (success, actual_port, error_msg)
+        tuple: (success, actual_port, pid, error_msg)
             - success: 启动是否成功
             - actual_port: 实际使用的端口号
+            - pid: 进程ID，成功时返回，失败时为 None
             - error_msg: 错误信息，成功时为 None
     """
     # 检查端口是否可用
     if not is_port_available(port):
         actual_port = find_available_port(port)
         if actual_port is None:
-            return False, port, "无可用端口"
+            return False, port, None, "无可用端口"
     else:
         actual_port = port
 
@@ -55,10 +56,10 @@ def start_tool(cmd, port):
     try:
         # 替换端口占位符
         actual_cmd = cmd.replace('{port}', str(actual_port))
-        subprocess.Popen(actual_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return True, actual_port, None
+        process = subprocess.Popen(actual_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True, actual_port, process.pid, None
     except Exception as e:
-        return False, actual_port, str(e)
+        return False, actual_port, None, str(e)
 
 
 def stop_tool(pid):
