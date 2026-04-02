@@ -4,6 +4,7 @@ Tool management hub for starting, stopping, and monitoring development tools.
 """
 
 from flask import Flask, jsonify, render_template, request
+from models import init_db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev-secret-key'
@@ -87,4 +88,5 @@ def index():
 # ==================== App Entry Point ====================
 
 if __name__ == '__main__':
+    init_db()  # Ensure database tables exist
     app.run(debug=True, port=5000)
