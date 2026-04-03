@@ -5,7 +5,7 @@ Tool management hub for starting, stopping, and monitoring development tools.
 
 from flask import Flask, jsonify, render_template, request
 from models import init_db, get_all_tools, get_tool, create_tool, update_tool, delete_tool, update_tool_status
-from process_manager import start_tool as pm_start, stop_tool as pm_stop, is_process_running
+from process_manager import start_tool as pm_start, stop_tool as pm_stop, is_process_running, get_process_by_port
 from port_scanner import is_port_available, find_available_port
 
 app = Flask(__name__)
@@ -104,15 +104,18 @@ def api_stop_tool(tool_id):
     if not tool:
         return jsonify({"success": False, "error": "Tool not found"})
 
-    if not tool['pid']:
-        return jsonify({"success": False, "error": "Tool not running (no PID)"})
+    # 即使没有PID，也尝试通过端口停止
+    if not tool['pid'] and not tool['port']:
+        return jsonify({"success": False, "error": "Tool not running (no PID and no port)"})
 
-    if not is_process_running(tool['pid']):
+    # 通过端口检查进程是否还在运行
+    real_pid = get_process_by_port(tool['port']) if tool['port'] else None
+    if not real_pid and tool['pid'] and not is_process_running(tool['pid']):
         # 进程已不存在，更新数据库状态
         update_tool_status(tool_id, 'stopped', None)
-        return jsonify({"success": False, "error": "Process not running"})
+        return jsonify({"success": True, "data": {"id": tool_id}})
 
-    success = pm_stop(tool['pid'])
+    success = pm_stop(tool['pid'], tool['port'])
     if success:
         update_tool_status(tool_id, 'stopped', None)
         return jsonify({"success": True, "data": {"id": tool_id}})
@@ -167,4 +170,4 @@ def index():
 
 if __name__ == '__main__':
     init_db()  # Ensure database tables exist
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)

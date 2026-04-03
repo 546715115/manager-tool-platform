@@ -561,6 +561,12 @@
                 <div>
                     <h1>CES测试工具管理平台</h1>
                 </div>
+                <button class="btn btn-secondary" onclick="checkActualStatus()" title="刷新状态">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    刷新
+                </button>
             </div>
             <button class="btn btn-primary" onclick="showModal()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -617,7 +623,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="tool-url">访问URL（可选）</label>
-                    <input type="text" class="form-input" id="tool-url" placeholder="例如：http://localhost:3000">
+                    <input type="text" class="form-input" id="tool-url" placeholder="http://localhost:">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
@@ -687,12 +693,12 @@
                             <span class="info-label">端口</span>
                             <span class="info-value">${tool.port}</span>
                         </div>
-                        ${tool.url ? `
+                        ${tool.status === 'running' ? `
                         <div class="info-row">
                             <span class="info-label">地址</span>
                             <span class="info-value">
-                                <a href="${escapeHtml(tool.url)}" target="_blank" style="color: var(--color-secondary);">
-                                    ${escapeHtml(tool.url)}
+                                <a href="http://localhost:${tool.port}" target="_blank" style="color: var(--color-secondary);">
+                                    http://localhost:${tool.port}
                                 </a>
                             </span>
                         </div>
@@ -710,8 +716,8 @@
                                 <button class="btn btn-stop btn-sm" onclick="stopTool(${tool.id})">
                                     停止
                                 </button>
-                                ${tool.url ? `
-                                    <a href="${escapeHtml(tool.url)}" target="_blank" class="btn btn-secondary btn-sm">
+                                ${tool.status === 'running' ? `
+                                    <a href="http://localhost:${tool.port}" target="_blank" class="btn btn-secondary btn-sm">
                                         打开
                                     </a>
                                 ` : ''}
@@ -858,7 +864,7 @@
             const port = parseInt(document.getElementById('tool-port').value);
             const url = document.getElementById('tool-url').value.trim();
 
-            const data = { name, cmd, port, url };
+            const data = { name, cmd, port, url: url || null };
 
             try {
                 let response;
@@ -933,6 +939,29 @@
 
         // Initial load
         fetchTools();
+
+        // 定期检查运行中工具的实际状态
+        async function checkActualStatus() {
+            for (const tool of tools) {
+                if (tool.status === 'running') {
+                    try {
+                        const response = await fetch(`/api/tools/${tool.id}/status`);
+                        const result = await response.json();
+                        if (result.success && result.data.status === 'stopped') {
+                            // 实际已停止，更新本地状态
+                            tool.status = 'stopped';
+                            tool.pid = null;
+                        }
+                    } catch (e) {
+                        console.error('Status check error:', e);
+                    }
+                }
+            }
+            renderTools();
+        }
+
+        // 每5秒检查一次实际状态
+        setInterval(checkActualStatus, 5000);
     </script>
 </body>
 </html>
